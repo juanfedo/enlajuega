@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #f7f6f3;
+  --color-surface: #ffffff;
+  --color-sunken: #efeeea;
+  --color-ink: #0c0a09;
+  --color-ink-2: #44403c;
+  --color-ink-3: #78716c;
+  --color-ink-4: #a8a29e;
+  --color-line: rgb(12 10 9 / 0.08);
+  --color-line-2: rgb(12 10 9 / 0.14);
+  --color-accent: #5b3df5;
+  --color-accent-hover: #4a2ee0;
+  --color-accent-soft: #eeebff;
+  --color-lime: #c8f169;
+  --color-lime-ink: #3a5208;
+
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --shadow-card: 0 0 0 1px rgb(12 10 9 / 0.06), 0 1px 2px rgb(12 10 9 / 0.04), 0 2px 4px rgb(12 10 9 / 0.03);
+  --shadow-float: 0 0 0 1px rgb(12 10 9 / 0.06), 0 4px 8px -2px rgb(12 10 9 / 0.06), 0 16px 32px -8px rgb(12 10 9 / 0.14);
+
+  --animate-marquee: marquee 50s linear infinite;
+  @keyframes marquee {
+    to { transform: translateX(-50%); }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-lime);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  input[type="search"]::-webkit-search-cancel-button { display: none; }
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+}
+
+@utility serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+@utility press {
+  transition: transform 160ms var(--ease-out);
+  &:active { transform: scale(0.97); }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-marquee { animation: none; }
+}
+
+/* Vaul: drawers laterales en escritorio */
+[data-vaul-drawer][data-vaul-drawer-direction="right"] {
+  --initial-transform: calc(100% + 12px);
+}
