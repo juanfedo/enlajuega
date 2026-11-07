@@ -1,4 +1,6 @@
 import type { Game } from "../data/catalog";
+
+export type SheetCatalog = { games: Game[]; updated: string | null };
 import { normalize, storage } from "./utils";
 
 // Lee el catálogo desde una hoja de Google Sheets publicada como CSV
@@ -12,6 +14,10 @@ import { normalize, storage } from "./utils";
 //   ludoteca  sí / no (también vale TRUE/FALSE de una casilla de verificación, x, 1)
 //   imagenes  nombres de archivo de public/assets/games ("07b.webp 07c.webp")
 //             o URLs completas, separados por espacio o coma
+//   destacado opcional; "sí" = aparece en el abanico del inicio (máximo 5, en el orden de la hoja)
+//   actualizado opcional; fecha de la última edición de la hoja (AAAA-MM-DD o DD/MM/AAAA).
+//             Se toma el primer valor no vacío de la columna. La escribe automáticamente
+//             el Apps Script del README en cada edición.
 
 const CACHE_KEY = "elj-catalog";
 
@@ -62,8 +68,19 @@ const YES = new Set(["si", "s", "x", "true", "verdadero", "1", "yes"]);
 
 const toImage = (s: string) => (/^https?:\/\//i.test(s) || s.startsWith("assets/") ? s : `assets/games/${s}`);
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** Normaliza "2026-11-07", "2026-11-07T10:00…" o "7/11/2026 10:00" a "2026-11-07". */
+export function toISODate(s: string): string | null {
+  let m = s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  m = s.match(/(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/);
+  if (m && +m[2] <= 12) return `${m[3]}-${pad(+m[2])}-${pad(+m[1])}`;
+  return null;
+}
+
 /** Convierte el CSV en juegos. Lanza un error si la hoja no tiene el formato esperado. */
-export function csvToCatalog(text: string): Game[] {
+export function csvToCatalog(text: string): SheetCatalog {
   const [header, ...rows] = parseCSV(text);
   if (!header) throw new Error("Hoja vacía");
   const col = Object.fromEntries(header.map((h, i) => [normalize(h.trim()).replace(/\s+/g, ""), i]));
@@ -72,7 +89,9 @@ export function csvToCatalog(text: string): Game[] {
   const get = (r: string[], name: string) => (col[name] === undefined ? "" : (r[col[name]] ?? "").trim());
   const seen = new Set<string>();
   const games: Game[] = [];
+  let updated: string | null = null;
   for (const r of rows) {
+    updated ??= toISODate(get(r, "actualizado"));
     const name = get(r, "nombre");
     const price = toInt(get(r, "precio"));
     if (!name || Number.isNaN(price)) continue;
@@ -87,22 +106,25 @@ export function csvToCatalog(text: string): Game[] {
       stock: Number.isNaN(stock) ? 0 : stock,
       ludoteca: YES.has(normalize(get(r, "ludoteca"))),
       images: get(r, "imagenes").split(/[\s,]+/).filter(Boolean).map(toImage),
+      ...(YES.has(normalize(get(r, "destacado"))) && { featured: true }),
     });
   }
   if (!games.length) throw new Error("La hoja no tiene juegos válidos");
-  return games;
+  return { games, updated };
 }
 
-export async function fetchCatalog(url: string): Promise<Game[]> {
+export async function fetchCatalog(url: string): Promise<SheetCatalog> {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const games = csvToCatalog(await res.text());
-  storage.set(CACHE_KEY, games);
-  return games;
+  const data = csvToCatalog(await res.text());
+  storage.set(CACHE_KEY, data);
+  return data;
 }
 
 /** Última versión descargada de la hoja (o null si nunca se ha descargado). */
-export const cachedCatalog = () => {
-  const c = storage.get<Game[] | null>(CACHE_KEY, null);
-  return Array.isArray(c) && c.length ? c : null;
+export const cachedCatalog = (): SheetCatalog | null => {
+  const c = storage.get<SheetCatalog | Game[] | null>(CACHE_KEY, null);
+  // Formato antiguo de la caché: solo el arreglo de juegos.
+  if (Array.isArray(c)) return c.length ? { games: c, updated: null } : null;
+  return c && Array.isArray(c.games) && c.games.length ? { games: c.games, updated: c.updated ?? null } : null;
 };

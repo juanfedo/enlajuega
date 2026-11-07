@@ -3,7 +3,8 @@ import { useStore } from "../store";
 import { Arrow } from "./icons";
 import { buttonClass, GameCover } from "./ui";
 
-const FAN = ["dixit-classic", "carcassonne", "splendor-nueva-edicion", "magic-maze", "draftosaurus"];
+// El abanico admite hasta 5 cartas; con más se sale del contenedor.
+const FAN_MAX = 5;
 const ease = [0.23, 1, 0.32, 1] as const;
 
 const container: Variants = { show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } } };
@@ -13,9 +14,11 @@ const item: Variants = {
 };
 
 export function Hero() {
-  const { openProduct, catalog, games } = useStore();
+  const { openProduct, catalog } = useStore();
   const inStock = catalog.filter((g) => g.stock > 0).length;
-  const fan = FAN.map((id) => games.get(id)!).filter(Boolean);
+  // Juegos marcados como "destacado" en la hoja; si no hay ninguno, los primeros con stock y foto.
+  const featured = catalog.filter((g) => g.featured);
+  const fan = (featured.length ? featured : catalog.filter((g) => g.stock > 0 && g.images.length)).slice(0, FAN_MAX);
 
   return (
     <section id="inicio" className="relative mx-auto max-w-6xl px-4 pt-10 pb-16 sm:px-6 md:pt-20 md:pb-24">

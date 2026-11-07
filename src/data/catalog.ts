@@ -1,6 +1,9 @@
-export type Game = { id: string; name: string; price: number; stock: number; ludoteca: boolean; images: string[] };
+export type Game = { id: string; name: string; price: number; stock: number; ludoteca: boolean; images: string[]; featured?: boolean };
 
-// Catálogo actualizado al 02/11/2026. price en COP, stock = copias disponibles,
+/** Fecha de esta copia de respaldo; se muestra en el pie si la hoja no trae la columna "actualizado". */
+export const CATALOG_UPDATED = "2026-11-02";
+
+// Catálogo de respaldo. price en COP, stock = copias disponibles,
 // ludoteca = se puede probar en la Casita antes de comprar.
 export const CATALOG: Game[] = [
   {"id":"kadogemo","name":"Kadogemo","price":12000,"stock":2,"ludoteca":false,"images":["assets/games/00b.webp","assets/games/00c.webp"]},
@@ -28,7 +31,7 @@ export const CATALOG: Game[] = [
   {"id":"nesting-doll-triqui","name":"Nesting Doll (Triqui)","price":33000,"stock":1,"ludoteca":false,"images":["assets/games/22c.webp"]},
   {"id":"catan","name":"Catan","price":250000,"stock":0,"ludoteca":false,"images":["assets/games/23b.webp","assets/games/23c.webp"]},
   {"id":"mariposas","name":"Mariposas","price":200000,"stock":1,"ludoteca":false,"images":["assets/games/24b.webp","assets/games/24c.webp"]},
-  {"id":"carcassonne","name":"Carcassonne","price":177000,"stock":1,"ludoteca":true,"images":["assets/games/25b.webp","assets/games/25c.webp"]},
+  {"id":"carcassonne","name":"Carcassonne","price":177000,"stock":1,"ludoteca":true,"images":["assets/games/25b.webp","assets/games/25c.webp"],"featured":true},
   {"id":"savernake-forest","name":"Savernake Forest","price":95000,"stock":1,"ludoteca":true,"images":["assets/games/26b.webp","assets/games/26c.webp"]},
   {"id":"fritanga","name":"Fritanga","price":125000,"stock":1,"ludoteca":false,"images":["assets/games/27b.webp","assets/games/27c.webp"]},
   {"id":"dog","name":"Dog","price":30000,"stock":1,"ludoteca":true,"images":["assets/games/28b.webp","assets/games/28c.webp"]},
@@ -43,7 +46,7 @@ export const CATALOG: Game[] = [
   {"id":"que-gonorrea","name":"¡Qué Gonorrea!","price":80000,"stock":0,"ludoteca":true,"images":["assets/games/37b.webp","assets/games/37c.webp"]},
   {"id":"teto","name":"¡Teto!","price":100000,"stock":0,"ludoteca":true,"images":["assets/games/38b.webp","assets/games/38c.webp"]},
   {"id":"la-cuenta","name":"La Cuenta","price":92000,"stock":3,"ludoteca":true,"images":["assets/games/39b.webp","assets/games/39c.webp"]},
-  {"id":"magic-maze","name":"Magic Maze","price":195000,"stock":1,"ludoteca":true,"images":["assets/games/40b.webp","assets/games/40c.webp"]},
+  {"id":"magic-maze","name":"Magic Maze","price":195000,"stock":1,"ludoteca":true,"images":["assets/games/40b.webp","assets/games/40c.webp"],"featured":true},
   {"id":"quita-esa-mano","name":"¡Quita esa mano!","price":80000,"stock":0,"ludoteca":true,"images":["assets/games/41b.webp","assets/games/41c.webp"]},
   {"id":"vudu","name":"Vudú","price":150000,"stock":0,"ludoteca":true,"images":["assets/games/42b.webp","assets/games/42c.webp"]},
   {"id":"macho","name":"Macho","price":170000,"stock":1,"ludoteca":true,"images":["assets/games/43b.webp"]},
@@ -57,7 +60,7 @@ export const CATALOG: Game[] = [
   {"id":"anda-a-lavar","name":"Anda a lavar","price":75000,"stock":2,"ludoteca":true,"images":["assets/games/51b.webp","assets/games/51c.webp"]},
   {"id":"scout","name":"Scout","price":80000,"stock":3,"ludoteca":true,"images":["assets/games/52b.webp","assets/games/52c.webp"]},
   {"id":"barrio","name":"Barrio","price":75000,"stock":2,"ludoteca":true,"images":["assets/games/53b.webp","assets/games/53c.webp"]},
-  {"id":"draftosaurus","name":"Draftosaurus","price":120000,"stock":2,"ludoteca":true,"images":["assets/games/54b.webp","assets/games/54c.webp"]},
+  {"id":"draftosaurus","name":"Draftosaurus","price":120000,"stock":2,"ludoteca":true,"images":["assets/games/54b.webp","assets/games/54c.webp"],"featured":true},
   {"id":"abuela-co","name":"Abuela Co.","price":108900,"stock":3,"ludoteca":true,"images":["assets/games/55b.webp","assets/games/55c.webp"]},
   {"id":"guanga","name":"Guanga","price":113900,"stock":3,"ludoteca":true,"images":["assets/games/56b.webp","assets/games/56c.webp"]},
   {"id":"bim-bam-bum","name":"Bim Bam Bum","price":80000,"stock":4,"ludoteca":true,"images":["assets/games/57b.webp","assets/games/57c.webp"]},

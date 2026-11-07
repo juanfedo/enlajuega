@@ -1,11 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { CATALOG, type Game } from "./data/catalog";
+import { CATALOG, CATALOG_UPDATED, type Game } from "./data/catalog";
 import { SITE } from "./data/site";
 import { cachedCatalog, fetchCatalog } from "./lib/sheet";
 import { storage } from "./lib/utils";
 
 type Store = {
   catalog: Game[];
+  /** Fecha (AAAA-MM-DD) de la última actualización del catálogo. */
+  updated: string;
   games: Map<string, Game>;
   items: Record<string, number>;
   count: number;
@@ -38,7 +40,9 @@ function sanitize(cart: Record<string, number>, games: Map<string, Game>) {
 export function StoreProvider({ children }: { children: ReactNode }) {
   // Arranca con la última copia descargada de la hoja (o el catálogo incluido en el sitio)
   // y se actualiza en cuanto llega la versión fresca.
-  const [catalog, setCatalog] = useState<Game[]>(() => cachedCatalog() ?? CATALOG);
+  const [initial] = useState(cachedCatalog);
+  const [catalog, setCatalog] = useState<Game[]>(initial?.games ?? CATALOG);
+  const [updated, setUpdated] = useState(initial?.updated ?? CATALOG_UPDATED);
   const games = useMemo(() => toMap(catalog), [catalog]);
   const [items, setItems] = useState(() => sanitize(storage.get("elj-cart", {}), games));
   const [cartOpen, setCartOpen] = useState(false);
@@ -51,9 +55,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!SITE.catalogSheetUrl) return;
     let alive = true;
     fetchCatalog(SITE.catalogSheetUrl)
-      .then((next) => {
+      .then(({ games: next, updated }) => {
         if (!alive) return;
         setCatalog(next);
+        setUpdated(updated ?? CATALOG_UPDATED);
         setItems((prev) => sanitize(prev, toMap(next)));
       })
       .catch((err) => console.warn("[catálogo] No se pudo leer la hoja, se usa la copia local.", err));
@@ -81,6 +86,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const entries = Object.entries(items).filter(([id]) => games.has(id));
     return {
       catalog,
+      updated,
       games,
       items,
       count: entries.reduce((a, [, q]) => a + q, 0),
@@ -95,7 +101,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       bookingId,
       openBooking: setBookingId,
     };
-  }, [catalog, games, items, setQty, cartOpen, productId, bookingId]);
+  }, [catalog, updated, games, items, setQty, cartOpen, productId, bookingId]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

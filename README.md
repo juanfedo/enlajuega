@@ -36,6 +36,27 @@ El catálogo se lee al abrir la página desde una hoja de Google Sheets, así qu
 2. Archivo → Compartir → **Publicar en la web** → elige la pestaña y el formato **CSV** → Publicar. Copia el enlace.
 3. Pega el enlace en `catalogSheetUrl` de `src/data/site.ts`, ejecuta `npm run build` y sube `dist/` una última vez.
 
-Columnas: `id` (opcional), `nombre`, `precio`, `stock`, `ludoteca` (sí/no o casilla), `imagenes` (archivos de `public/assets/games/` como `07b.webp 07c.webp`, o URLs completas). Las filas sin nombre o sin precio se ignoran. Google tarda unos minutos en reflejar los cambios en el CSV publicado.
+Columnas: `id` (opcional), `nombre`, `precio`, `stock`, `ludoteca` (sí/no o casilla), `imagenes` (archivos de `public/assets/games/` como `07b.webp 07c.webp`, o URLs completas), `destacado` (opcional: "sí" para que el juego aparezca en el abanico del inicio; máximo 5, en el orden de la hoja; si ninguno está marcado se muestran los primeros con stock y foto). Las filas sin nombre o sin precio se ignoran. Google tarda unos minutos en reflejar los cambios en el CSV publicado.
+
+### Fecha de actualización automática
+
+El pie de página muestra "Catálogo actualizado al …" con la fecha de la columna `actualizado` (se toma el primer valor no vacío). Google no publica la fecha de modificación de la hoja, así que la escribe un pequeño script cada vez que alguien edita:
+
+1. Agrega una columna con el encabezado `actualizado` (puede ser la última).
+2. En la hoja: Extensiones → **Apps Script**, borra lo que haya, pega esto y guarda:
+
+   ```js
+   function onEdit(e) {
+     // Sin `e` = se ejecutó con el botón "Ejecutar" (prueba manual).
+     const sheet = e ? e.range.getSheet() : SpreadsheetApp.getActiveSheet();
+     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+     const col = headers.findIndex((h) => String(h).trim().toLowerCase() === "actualizado") + 1;
+     if (!col || (e && e.range.getColumn() === col && e.range.getNumColumns() === 1)) return;
+     const hoy = Utilities.formatDate(new Date(), "America/Bogota", "yyyy-MM-dd");
+     sheet.getRange(2, col).setNumberFormat("@").setValue(hoy);
+   }
+   ```
+
+No hace falta autorizar nada: `onEdit` es un activador simple que corre solo con cada edición manual. Si la hoja no tiene la columna, el pie muestra `CATALOG_UPDATED` de `src/data/catalog.ts`.
 
 No cambies el `id` de un juego existente: es lo que identifica el producto en el carrito de los clientes.

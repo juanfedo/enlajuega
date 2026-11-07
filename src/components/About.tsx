@@ -2,6 +2,7 @@ import { SITE } from "../data/site";
 import { waLink } from "../lib/utils";
 import { Instagram, Mail, Pin, WhatsApp } from "./icons";
 import { Logo } from "./Header";
+import { useStore } from "../store";
 import { buttonClass, Kicker, Reveal } from "./ui";
 
 const TEAM = [
@@ -96,11 +97,17 @@ export function Contact() {
   );
 }
 
+const formatDate = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
+};
+
 export function Footer() {
+  const { updated } = useStore();
   return (
     <footer className="mx-auto flex max-w-6xl flex-col gap-4 border-t border-line px-4 py-8 text-[12.5px] text-ink-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
       <Logo />
-      <p>Precios en pesos colombianos. Catálogo actualizado al 2 de noviembre de 2026.</p>
+      <p>Precios en pesos colombianos. Catálogo actualizado al {formatDate(updated)}.</p>
       <p>© {new Date().getFullYear()} EnLaJuega</p>
     </footer>
   );
